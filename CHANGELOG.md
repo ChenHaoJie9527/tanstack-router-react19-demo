@@ -5,6 +5,84 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [2.0.0] - 2025-10-26
+
+### 🎉 重大更新 - TanStack Query 集成
+
+#### 新增功能
+- ✨ **TanStack Query 5.x** 集成 - 完整的服务端状态管理
+- ✨ **API Hooks 工厂模式** - 集中管理所有 API 调用
+- ✨ **双层状态管理架构**
+  - Zustand - 客户端状态（UI、偏好）
+  - TanStack Query - 服务端状态（API 数据）
+- ✨ **新示例页面**
+  - `/notes-api` - API Hooks 使用示例
+  - `/notes-prefetch` - 数据预加载示例
+  - `/notes/$noteId` - 动态路由 + 预加载
+- ✨ **API Provider** - 统一的 API Hooks 提供者
+- ✨ **Query Keys 管理** - 类型安全的缓存键管理
+- ✨ **自动缓存失效** - Mutation 后自动刷新相关数据
+
+#### 架构改进
+- 🏗 **职责分离** - 明确区分客户端和服务端状态
+- 🏗 **依赖注入** - 通过路由器上下文注入 `useApi`
+- 🏗 **工厂模式** - 可复用的 API Hooks 创建模式
+- 🏗 **类型安全** - 完整的 TypeScript 类型推断
+
+#### 新增文件
+- `src/api/factory.ts` - API Hooks 工厂
+- `src/api/index.ts` - Mock API 服务
+- `src/providers/api-provider.tsx` - API Hooks Provider
+- `src/lib/queryClient.ts` - Query Client 配置
+- `src/routes/notes-api.tsx` - API Hooks 示例
+- `src/routes/notes-prefetch.tsx` - 预加载示例
+
+#### 文档更新
+- 📚 **README.md** - 添加 TanStack Query 使用指南
+- 📚 **QUICK_REFERENCE.md** - 添加 API Hooks 代码片段
+- 📚 **DOCUMENTATION.md** - 更新学习路径和示例
+- 📚 新增混合使用 Zustand + TanStack Query 的模式
+- 📚 新增 API Hooks 工厂创建完整示例
+
+#### 开发工具
+- 🛠 **React Query DevTools** - 可视化查询和缓存状态
+- 🛠 更新依赖包
+  - `@tanstack/react-query@^5.51.11`
+  - `@tanstack/react-query-devtools@^5.51.11`
+
+#### 性能优化
+- ⚡ 路由级别数据预加载 - 减少加载闪烁
+- ⚡ 智能缓存管理 - 减少不必要的网络请求
+- ⚡ 自动后台刷新 - 保持数据新鲜度
+
+### 破坏性变更
+- 🔴 `MyRouterContext` 类型新增 `useApi` 字段
+- 🔴 需要在 `App.tsx` 中添加 `ApiProvider` 包裹
+
+### 迁移指南
+```typescript
+// 1. 更新路由器上下文类型
+interface MyRouterContext {
+  useStore: AppStoreType
+  queryClient: QueryClient
+  useApi: () => ApiHooks  // 新增
+}
+
+// 2. 在 App.tsx 中添加 ApiProvider
+<QueryClientProvider client={queryClient}>
+  <ApiProvider>  {/* 新增 */}
+    <RouterProvider router={router} />
+  </ApiProvider>
+</QueryClientProvider>
+
+// 3. 在组件中使用
+const { useApi } = Route.useRouteContext()
+const api = useApi()
+const { data } = api.useNotes()
+```
+
+---
+
 ## [1.0.0] - 2025-10-26
 
 ### 新增

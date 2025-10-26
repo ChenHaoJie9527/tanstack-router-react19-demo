@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StateDemoRouteImport } from './routes/state-demo'
+import { Route as NotesApiRouteImport } from './routes/notes-api'
 import { Route as MinimalDemoRouteImport } from './routes/minimal-demo'
 import { Route as ContextDemoRouteImport } from './routes/context-demo'
 import { Route as AboutRouteImport } from './routes/about'
@@ -21,6 +22,11 @@ import { Route as NotesNoteIdRouteImport } from './routes/notes/$noteId'
 const StateDemoRoute = StateDemoRouteImport.update({
   id: '/state-demo',
   path: '/state-demo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotesApiRoute = NotesApiRouteImport.update({
+  id: '/notes-api',
+  path: '/notes-api',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MinimalDemoRoute = MinimalDemoRouteImport.update({
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/context-demo': typeof ContextDemoRoute
   '/minimal-demo': typeof MinimalDemoRoute
+  '/notes-api': typeof NotesApiRoute
   '/state-demo': typeof StateDemoRoute
   '/notes/$noteId': typeof NotesNoteIdRoute
   '/notes/': typeof NotesIndexRoute
@@ -74,6 +81,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/context-demo': typeof ContextDemoRoute
   '/minimal-demo': typeof MinimalDemoRoute
+  '/notes-api': typeof NotesApiRoute
   '/state-demo': typeof StateDemoRoute
   '/notes/$noteId': typeof NotesNoteIdRoute
   '/notes': typeof NotesIndexRoute
@@ -85,6 +93,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/context-demo': typeof ContextDemoRoute
   '/minimal-demo': typeof MinimalDemoRoute
+  '/notes-api': typeof NotesApiRoute
   '/state-demo': typeof StateDemoRoute
   '/notes/$noteId': typeof NotesNoteIdRoute
   '/notes/': typeof NotesIndexRoute
@@ -97,6 +106,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/context-demo'
     | '/minimal-demo'
+    | '/notes-api'
     | '/state-demo'
     | '/notes/$noteId'
     | '/notes/'
@@ -106,6 +116,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/context-demo'
     | '/minimal-demo'
+    | '/notes-api'
     | '/state-demo'
     | '/notes/$noteId'
     | '/notes'
@@ -116,6 +127,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/context-demo'
     | '/minimal-demo'
+    | '/notes-api'
     | '/state-demo'
     | '/notes/$noteId'
     | '/notes/'
@@ -127,6 +139,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   ContextDemoRoute: typeof ContextDemoRoute
   MinimalDemoRoute: typeof MinimalDemoRoute
+  NotesApiRoute: typeof NotesApiRoute
   StateDemoRoute: typeof StateDemoRoute
 }
 
@@ -137,6 +150,13 @@ declare module '@tanstack/react-router' {
       path: '/state-demo'
       fullPath: '/state-demo'
       preLoaderRoute: typeof StateDemoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notes-api': {
+      id: '/notes-api'
+      path: '/notes-api'
+      fullPath: '/notes-api'
+      preLoaderRoute: typeof NotesApiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/minimal-demo': {
@@ -211,6 +231,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   ContextDemoRoute: ContextDemoRoute,
   MinimalDemoRoute: MinimalDemoRoute,
+  NotesApiRoute: NotesApiRoute,
   StateDemoRoute: StateDemoRoute,
 }
 export const routeTree = rootRouteImport

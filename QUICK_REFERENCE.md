@@ -2,7 +2,17 @@
 
 > 常用代码片段和使用模式的快速查询手册
 
-## 📌 基础用法
+## 目录
+
+- [Zustand 客户端状态](#-zustand-客户端状态)
+- [TanStack Query 服务端状态](#-tanstack-query-服务端状态)
+- [路由集成](#-路由集成)
+- [性能优化](#-性能优化)
+- [常见模式](#-常见模式)
+
+---
+
+## 📦 Zustand 客户端状态
 
 ### 获取 Store
 
@@ -40,6 +50,123 @@ const { user, theme } = useStore(
 const login = useStore((state) => state.login)
 const setTheme = useStore((state) => state.setTheme)
 ```
+
+---
+
+## 🌐 TanStack Query 服务端状态
+
+### 获取 API Hooks
+
+```typescript
+const { useApi } = Route.useRouteContext()
+const api = useApi()
+```
+
+### 查询数据（useQuery）
+
+```typescript
+// 基础查询
+const { data, isLoading, error, refetch } = api.useNotes()
+
+// 带选项的查询
+const { data: notes } = api.useNotes({
+  staleTime: 1000 * 60 * 5, // 5 分钟
+  refetchInterval: 30000, // 每 30 秒刷新
+  enabled: true, // 条件查询
+})
+
+// 查询单个资源
+const { data: note } = api.useNote(noteId)
+```
+
+### 数据变更（useMutation）
+
+```typescript
+// 创建
+const createNote = api.useCreateNote()
+createNote.mutate(
+  { title: "标题", content: "内容", folderId: "personal" },
+  {
+    onSuccess: (data) => {
+      console.log('创建成功', data)
+    },
+    onError: (error) => {
+      console.error('创建失败', error)
+    }
+  }
+)
+
+// 更新
+const updateNote = api.useUpdateNote()
+updateNote.mutate({ id: noteId, title: "新标题" })
+
+// 删除
+const deleteNote = api.useDeleteNote()
+deleteNote.mutate(noteId)
+
+// 检查状态
+if (createNote.isPending) return <div>创建中...</div>
+if (createNote.isError) return <div>错误: {createNote.error.message}</div>
+if (createNote.isSuccess) return <div>创建成功！</div>
+```
+
+### 路由级别预加载
+
+```typescript
+import { queryKeys } from '@/api/factory'
+import { api } from '@/api'
+
+export const Route = createFileRoute('/notes/$noteId')({
+  // 在路由加载时预取数据
+  loader: ({ context, params }) => {
+    return context.queryClient.ensureQueryData({
+      queryKey: queryKeys.notes.detail(params.noteId),
+      queryFn: () => api.getNote(params.noteId),
+    })
+  },
+  
+  component: NoteDetail,
+})
+
+function NoteDetail() {
+  const { noteId } = Route.useParams()
+  const { useApi } = Route.useRouteContext()
+  const api = useApi()
+  
+  // 数据已预加载，立即可用
+  const { data: note } = api.useNote(noteId)
+  
+  return <div>{note?.title}</div>
+}
+```
+
+### 手动操作缓存
+
+```typescript
+import { useQueryClient } from '@tanstack/react-query'
+import { queryKeys } from '@/api/factory'
+
+function Component() {
+  const queryClient = useQueryClient()
+  
+  // 手动失效缓存
+  queryClient.invalidateQueries({ queryKey: queryKeys.notes.lists() })
+  
+  // 手动更新缓存
+  queryClient.setQueryData(queryKeys.notes.detail('123'), newData)
+  
+  // 获取缓存数据
+  const cachedData = queryClient.getQueryData(queryKeys.notes.lists())
+  
+  // 预取数据
+  queryClient.prefetchQuery({
+    queryKey: queryKeys.notes.detail('123'),
+    queryFn: () => api.getNote('123'),
+  })
+}
+```
+
+---
 
 ## 🎯 常见模式
 
@@ -113,6 +240,65 @@ function NotesList() {
   )
 }
 ```
+
+### 混合使用 Zustand + TanStack Query
+
+```typescript
+function NotesPage() {
+  // Zustand - 客户端状态（UI 状态）
+  const { useStore } = Route.useRouteContext()
+  const searchQuery = useStore((state) => state.searchQuery)
+  const setSearchQuery = useStore((state) => state.setSearchQuery)
+  const theme = useStore((state) => state.theme)
+  
+  // TanStack Query - 服务端数据
+  const { useApi } = Route.useRouteContext()
+  const api = useApi()
+  const { data: notes, isLoading } = api.useNotes()
+  const createNote = api.useCreateNote()
+  
+  // 客户端过滤（基于 Zustand 状态）
+  const filteredNotes = notes?.filter(note =>
+    note.title.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+  
+  const handleCreate = () => {
+    createNote.mutate({
+      title: "新备忘录",
+      content: "",
+      folderId: "personal"
+    })
+  }
+  
+  return (
+    <div className={theme}>
+      <input 
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        placeholder="搜索..."
+      />
+      <button onClick={handleCreate} disabled={createNote.isPending}>
+        创建备忘录
+      </button>
+      {isLoading ? (
+        <div>加载中...</div>
+      ) : (
+        <ul>
+          {filteredNotes?.map(note => (
+            <li key={note.id}>{note.title}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+```
+
+**职责分离原则**：
+- ✅ Zustand：`searchQuery`（UI 状态）、`theme`（用户偏好）
+- ✅ TanStack Query：`notes`（服务端数据）、`createNote`（API 操作）
+
+---
 
 ## 🔧 高级用法
 
@@ -349,11 +535,173 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 })
 ```
 
+---
+
+## 🏭 创建 API Hooks 工厂
+
+### 定义 Query Keys
+
+```typescript
+// src/api/factory.ts
+export const queryKeys = {
+  notes: {
+    all: ['notes'] as const,
+    lists: () => [...queryKeys.notes.all, 'list'] as const,
+    list: (filters?: any) => [...queryKeys.notes.lists(), filters] as const,
+    details: () => [...queryKeys.notes.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.notes.details(), id] as const,
+  },
+  users: {
+    all: ['users'] as const,
+    detail: (id: string) => [...queryKeys.users.all, id] as const,
+  },
+} as const
+```
+
+### 创建 API Hooks
+
+```typescript
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { api } from './index'
+
+export function createApiHooks() {
+  return {
+    // ============ Query Hooks ============
+    
+    useNotes: (options?: UseQueryOptions) => {
+      return useQuery({
+        queryKey: queryKeys.notes.lists(),
+        queryFn: api.getNotes,
+        ...options,
+      })
+    },
+    
+    useNote: (id: string, options?: UseQueryOptions) => {
+      return useQuery({
+        queryKey: queryKeys.notes.detail(id),
+        queryFn: () => api.getNote(id),
+        ...options,
+      })
+    },
+    
+    // ============ Mutation Hooks ============
+    
+    useCreateNote: (options?: UseMutationOptions) => {
+      const queryClient = useQueryClient()
+      
+      return useMutation({
+        mutationFn: api.createNote,
+        onSuccess: (data, variables, context) => {
+          // 自动刷新列表
+          queryClient.invalidateQueries({ 
+            queryKey: queryKeys.notes.lists() 
+          })
+          options?.onSuccess?.(data, variables, context)
+        },
+        ...options,
+      })
+    },
+    
+    useUpdateNote: (options?: UseMutationOptions) => {
+      const queryClient = useQueryClient()
+      
+      return useMutation({
+        mutationFn: ({ id, ...data }: any) => api.updateNote(id, data),
+        onSuccess: (data, variables, context) => {
+          // 刷新详情和列表
+          queryClient.invalidateQueries({ 
+            queryKey: queryKeys.notes.detail(variables.id) 
+          })
+          queryClient.invalidateQueries({ 
+            queryKey: queryKeys.notes.lists() 
+          })
+          options?.onSuccess?.(data, variables, context)
+        },
+        ...options,
+      })
+    },
+    
+    useDeleteNote: (options?: UseMutationOptions) => {
+      const queryClient = useQueryClient()
+      
+      return useMutation({
+        mutationFn: api.deleteNote,
+        onSuccess: (data, variables, context) => {
+          queryClient.invalidateQueries({ 
+            queryKey: queryKeys.notes.lists() 
+          })
+          options?.onSuccess?.(data, variables, context)
+        },
+        ...options,
+      })
+    },
+  }
+}
+
+export type ApiHooks = ReturnType<typeof createApiHooks>
+```
+
+### 创建 Provider
+
+```typescript
+// src/providers/api-provider.tsx
+import { createContext, useContext, type ReactNode } from 'react'
+import { createApiHooks, type ApiHooks } from '@/api/factory'
+
+const ApiContext = createContext<ApiHooks | null>(null)
+
+export function ApiProvider({ children }: { children: ReactNode }) {
+  const apiHooks = createApiHooks()
+  return (
+    <ApiContext.Provider value={apiHooks}>
+      {children}
+    </ApiContext.Provider>
+  )
+}
+
+export function useApi() {
+  const context = useContext(ApiContext)
+  if (!context) {
+    throw new Error('useApi must be used within ApiProvider')
+  }
+  return context
+}
+```
+
+### 集成到路由器
+
+```typescript
+// src/App.tsx
+import { ApiProvider, useApi } from './providers/api-provider'
+
+const router = createRouter({
+  routeTree,
+  context: {
+    useStore: useAppStore,
+    queryClient,
+    useApi, // 注入 API Hooks 工厂
+  } satisfies MyRouterContext,
+})
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ApiProvider>
+        <RouterProvider router={router} />
+      </ApiProvider>
+    </QueryClientProvider>
+  )
+}
+```
+
+---
+
 ## 🔗 相关链接
 
 - [完整文档 - README.md](./README.md)
 - [技术详解 - ROUTER_CONTEXT.md](./ROUTER_CONTEXT.md)
 - [TanStack Router 文档](https://tanstack.com/router)
+- [TanStack Query 文档](https://tanstack.com/query)
 - [Zustand 文档](https://github.com/pmndrs/zustand)
 
 ---

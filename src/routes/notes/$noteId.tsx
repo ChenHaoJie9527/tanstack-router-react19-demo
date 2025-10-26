@@ -1,16 +1,33 @@
+import { api } from "@/api"
+import { queryKeys } from "@/api/factory"
+import { Empty, Spin, Typography } from "@douyinfe/semi-ui"
 import { createFileRoute } from "@tanstack/react-router"
-import { mockNotes } from "./route"
-import { Typography, Empty } from "@douyinfe/semi-ui"
 import styles from "./styles/noteDetail.module.scss"
 
 export const Route = createFileRoute("/notes/$noteId")({
 	component: NoteDetailComponent,
+	loader: ({ context, params }) => {
+		return context.queryClient.ensureQueryData({
+			queryKey: queryKeys.notes.detail(params.noteId),
+			queryFn: () => api.getNote(params.noteId),
+		})
+	},
 })
 
 function NoteDetailComponent() {
 	const { noteId } = Route.useParams()
+	const { useApi } = Route.useRouteContext()
+	const api = useApi()
 	const { Title, Paragraph, Text } = Typography
-	const note = mockNotes.find((n) => n.id === noteId)
+	const { data: note, isLoading, error } = api.useNote(noteId)
+
+	if (isLoading) {
+		return <Spin size="large" />
+	}
+
+	if (error) {
+		return <div>加载失败: {error.message}</div>
+	}
 
 	if (!note) {
 		return (

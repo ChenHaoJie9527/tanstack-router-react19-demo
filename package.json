@@ -1,16 +1,20 @@
 {
 	"name": "tanstack-router-react19.2",
 	"private": true,
-	"version": "1.0.0",
+	"version": "2.0.0",
 	"type": "module",
-	"description": "TanStack Router + Zustand 集成示例项目 - 展示如何将状态管理器集成到路由器上下文中",
+	"description": "TanStack Router + Zustand + TanStack Query 集成示例 - 双层状态管理架构（客户端 + 服务端）",
 	"keywords": [
 		"react",
 		"tanstack-router",
+		"tanstack-query",
 		"zustand",
 		"typescript",
 		"state-management",
-		"router-context"
+		"router-context",
+		"api-hooks",
+		"server-state",
+		"client-state"
 	],
 	"scripts": {
 		"dev": "vite",
@@ -24,6 +28,7 @@
 	"dependencies": {
 		"@douyinfe/semi-icons": "^2.86.0",
 		"@douyinfe/semi-ui": "^2.86.0",
+		"@tanstack/react-query": "^5.90.5",
 		"@tanstack/react-router": "^1.132.47",
 		"@tanstack/react-router-devtools": "^1.132.51",
 		"class-variance-authority": "^0.7.1",
@@ -32,6 +37,7 @@
 		"radix-ui": "^1.4.3",
 		"react": "^19.2.0",
 		"react-dom": "^19.2.0",
+		"tailwind-merge": "^3.3.1",
 		"the-new-css-reset": "^1.11.3",
 		"zustand": "^5.0.8"
 	},
