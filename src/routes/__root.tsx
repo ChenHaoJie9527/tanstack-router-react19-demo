@@ -1,13 +1,9 @@
-import type { AppStoreType } from "@/stores/useAppStore"
+import type { MyRouterContext } from "@/types"
 import { Button, Layout, Nav } from "@douyinfe/semi-ui"
 import { Link, Outlet, createRootRouteWithContext } from "@tanstack/react-router"
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
 
 // 定义路由器上下文类型
-interface MyRouterContext {
-	useStore: AppStoreType
-}
-
 export const Route = createRootRouteWithContext<MyRouterContext>()({
 	component: RootComponent,
 })
@@ -18,6 +14,7 @@ function RootComponent() {
 	const { useStore } = Route.useRouteContext()
 	// 调用 hook 获取状态 - 完整的 TypeScript 支持
 	const { user, theme, login, setTheme } = useStore()
+	console.log("render root")
 
 	return (
 		<Layout style={{ minHeight: "100vh" }}>

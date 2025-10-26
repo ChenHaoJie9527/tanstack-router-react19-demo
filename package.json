@@ -1,39 +1,49 @@
 {
-  "name": "tanstack-router-react19.2",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "biome check .",
-    "lint:fix": "biome check --write .",
-    "format": "biome format --write .",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@douyinfe/semi-icons": "^2.86.0",
-    "@douyinfe/semi-ui": "^2.86.0",
-    "@tanstack/react-router": "^1.132.47",
-    "@tanstack/react-router-devtools": "^1.132.51",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "lucide-react": "^0.545.0",
-    "radix-ui": "^1.4.3",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "the-new-css-reset": "^1.11.3",
-    "zustand": "^5.0.8"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
-    "@tanstack/router-plugin": "^1.132.51",
-    "@types/node": "^24.6.0",
-    "@types/react": "^19.1.16",
-    "@types/react-dom": "^19.1.9",
-    "@vitejs/plugin-react": "^5.0.4",
-    "sass-embedded": "^1.93.2",
-    "typescript": "~5.9.3",
-    "vite": "^7.1.9"
-  }
+	"name": "tanstack-router-react19.2",
+	"private": true,
+	"version": "1.0.0",
+	"type": "module",
+	"description": "TanStack Router + Zustand 集成示例项目 - 展示如何将状态管理器集成到路由器上下文中",
+	"keywords": [
+		"react",
+		"tanstack-router",
+		"zustand",
+		"typescript",
+		"state-management",
+		"router-context"
+	],
+	"scripts": {
+		"dev": "vite",
+		"build": "tsc -b && vite build",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write .",
+		"format": "biome format --write .",
+		"preview": "vite preview",
+		"type-check": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@douyinfe/semi-icons": "^2.86.0",
+		"@douyinfe/semi-ui": "^2.86.0",
+		"@tanstack/react-router": "^1.132.47",
+		"@tanstack/react-router-devtools": "^1.132.51",
+		"class-variance-authority": "^0.7.1",
+		"clsx": "^2.1.1",
+		"lucide-react": "^0.545.0",
+		"radix-ui": "^1.4.3",
+		"react": "^19.2.0",
+		"react-dom": "^19.2.0",
+		"the-new-css-reset": "^1.11.3",
+		"zustand": "^5.0.8"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.9.4",
+		"@tanstack/router-plugin": "^1.132.51",
+		"@types/node": "^24.6.0",
+		"@types/react": "^19.1.16",
+		"@types/react-dom": "^19.1.9",
+		"@vitejs/plugin-react": "^5.0.4",
+		"sass-embedded": "^1.93.2",
+		"typescript": "~5.9.3",
+		"vite": "^7.1.9"
+	}
 }
